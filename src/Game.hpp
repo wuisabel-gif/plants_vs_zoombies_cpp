@@ -7,6 +7,7 @@
 #include "ui/SunToken.hpp"
 #include "zombies/Zombie.hpp"
 
+#include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <array>
 #include <memory>
@@ -52,6 +53,11 @@ private:
 
     void beginAdventure();
     void beginLevel(int level);
+    void loadProgress();
+    void saveProgress() const;
+    void resetProgress();
+    void loadMusic();
+    void updateMusicPlayback();
     bool insideGrid(sf::Vector2i point) const;
     sf::Vector2i gridFromPixel(sf::Vector2i point) const;
     sf::Vector2f plantPosition(int column, int row) const;
@@ -80,10 +86,15 @@ private:
     std::array<float, 6> cardCooldowns = {};
     int currentLevel = 1;
     int maxLevel = 4;
+    int maxUnlockedLevel = 1;
     int group = 1;
     int spawnedZombies = 0;
     int defeatedZombies = 0;
     int firstWaveTotal = 8;
     float spawnDelay = 10.0f;
     float spawnTimer = 0.0f;
+    sf::Music backgroundMusic;
+    bool musicLoaded = false;
+    bool musicEnabled = true;
+    bool soundEffectsEnabled = true;
 };

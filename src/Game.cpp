@@ -8,20 +8,25 @@
 #include "plants/WallNut.hpp"
 #include "zombies/ZombieBasic.hpp"
 #include "zombies/ZombieConehead.hpp"
+#include "zombies/ZombieVariant.hpp"
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cmath>
 #include <cstdlib>
+#include <ctime>
+#include <filesystem>
+#include <fstream>
 
 namespace {
 constexpr unsigned int windowWidth = 820;
 constexpr unsigned int windowHeight = 620;
-constexpr std::array<int, 4> levelZombieTotals = {8, 12, 16, 22};
+constexpr std::array<int, 4> levelZombieTotals = {8, 11, 15, 20};
 constexpr std::array<float, 4> levelFirstSpawnDelays = {
-    6.0f, 8.0f, 5.0f, 3.5f
+    7.0f, 9.0f, 6.0f, 4.5f
 };
-constexpr std::array<float, 4> levelSpawnDelays = {4.0f, 4.6f, 3.0f, 2.4f};
+constexpr std::array<float, 4> levelSpawnDelays = {4.4f, 5.0f, 3.6f, 3.0f};
 constexpr std::array<int, 6> cardPrices = {50, 100, 50, 150, 175, 200};
 constexpr std::array<float, 6> cardCooldownDurations = {
     2.0f, 2.5f, 5.0f, 15.0f, 8.0f, 10.0f
@@ -32,10 +37,23 @@ constexpr int wallNutCard = 2;
 constexpr int cherryBombCard = 3;
 constexpr int snowPeaCard = 4;
 constexpr int repeaterCard = 5;
+constexpr const char* progressPath = "save_progress.txt";
 
 float distance(sf::Vector2f left, sf::Vector2f right) {
     const sf::Vector2f delta = left - right;
     return std::sqrt(delta.x * delta.x + delta.y * delta.y);
+}
+
+bool isSupportedMusicFile(const std::filesystem::path& path) {
+    std::string extension = path.extension().string();
+    std::transform(extension.begin(), extension.end(), extension.begin(), [](unsigned char c) {
+        return static_cast<char>(std::tolower(c));
+    });
+    return extension == ".ogg"
+        || extension == ".wav"
+        || extension == ".flac"
+        || extension == ".aiff"
+        || extension == ".mp3";
 }
 }
 
@@ -54,6 +72,10 @@ Game::Game()
           "assets/ui/GameOver_highlight.png",
           {280.0f, 335.0f}) {
     window.setFramerateLimit(60);
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+    loadProgress();
+    loadMusic();
+    updateMusicPlayback();
 }
 
 void Game::run() {
@@ -81,6 +103,13 @@ void Game::handleEvents() {
         } else if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
             if (key->code == sf::Keyboard::Key::Escape || key->code == sf::Keyboard::Key::Q) {
                 window.close();
+            } else if (key->code == sf::Keyboard::Key::M) {
+                musicEnabled = !musicEnabled;
+                updateMusicPlayback();
+            } else if (key->code == sf::Keyboard::Key::N) {
+                soundEffectsEnabled = !soundEffectsEnabled;
+            } else if (key->code == sf::Keyboard::Key::R && scene == Scene::Start) {
+                resetProgress();
             }
         }
     }
@@ -298,6 +327,12 @@ void Game::update(float deltaSeconds) {
     defeatedZombies += static_cast<int>(beforeRemovingZombies - zombies.size());
 
     if (spawnedZombies >= firstWaveTotal && zombies.empty()) {
+        if (currentLevel < maxLevel) {
+            maxUnlockedLevel = std::max(maxUnlockedLevel, currentLevel + 1);
+        } else {
+            maxUnlockedLevel = maxLevel;
+        }
+        saveProgress();
         scene = Scene::PlantsWon;
     }
 }
@@ -327,6 +362,18 @@ void Game::drawStart() {
     drawSprite("assets/ui/start/SelectorScreen_Options1.png", {570.0f, 490.0f});
     drawSprite("assets/ui/start/SelectorScreen_Help1.png", {655.0f, 529.0f});
     quitButton.draw(window);
+    drawText(
+        "Progress: Level " + std::to_string(maxUnlockedLevel),
+        {485.0f, 448.0f},
+        18,
+        sf::Color(245, 235, 190));
+    drawText(
+        "M Music: " + std::string(musicEnabled ? "On" : "Off")
+            + "   N SFX: " + std::string(soundEffectsEnabled ? "On" : "Off")
+            + "   R Reset",
+        {330.0f, 586.0f},
+        16,
+        sf::Color(245, 235, 190));
 }
 
 void Game::drawAdventure() {
@@ -431,6 +478,12 @@ void Game::drawSeedBank() {
         {720.0f, 585.0f},
         18,
         sf::Color::White);
+    drawText(
+        std::string("M Music: ") + (musicEnabled ? "On" : "Off")
+            + "  N SFX: " + (soundEffectsEnabled ? "On" : "Off"),
+        {10.0f, 585.0f},
+        15,
+        sf::Color::White);
 }
 
 void Game::drawCards() {
@@ -488,7 +541,7 @@ void Game::drawSprite(const std::string& path, sf::Vector2f position) {
 }
 
 void Game::beginAdventure() {
-    beginLevel(1);
+    beginLevel(maxUnlockedLevel);
 }
 
 void Game::beginLevel(int level) {
@@ -514,6 +567,69 @@ void Game::beginLevel(int level) {
     spawnDelay = levelFirstSpawnDelays[levelIndex];
     spawnTimer = 0.0f;
     scene = Scene::Adventure;
+}
+
+void Game::loadProgress() {
+    std::ifstream saveFile(progressPath);
+    int savedLevel = 1;
+    if (saveFile >> savedLevel) {
+        maxUnlockedLevel = std::clamp(savedLevel, 1, maxLevel);
+    }
+}
+
+void Game::saveProgress() const {
+    std::ofstream saveFile(progressPath, std::ios::trunc);
+    if (saveFile) {
+        saveFile << maxUnlockedLevel << '\n';
+    }
+}
+
+void Game::resetProgress() {
+    maxUnlockedLevel = 1;
+    saveProgress();
+}
+
+void Game::loadMusic() {
+    static const std::array<const char*, 4> soundtrackFolders = {
+        "soundtrack",
+        "Soundtrack",
+        "assets/soundtrack",
+        "assets/Soundtrack"
+    };
+
+    for (const char* folder : soundtrackFolders) {
+        const std::filesystem::path folderPath(folder);
+        if (!std::filesystem::exists(folderPath)) {
+            continue;
+        }
+
+        for (const auto& entry : std::filesystem::directory_iterator(folderPath)) {
+            if (!entry.is_regular_file() || !isSupportedMusicFile(entry.path())) {
+                continue;
+            }
+
+            if (backgroundMusic.openFromFile(entry.path())) {
+                backgroundMusic.setLooping(true);
+                backgroundMusic.setVolume(55.0f);
+                musicLoaded = true;
+                return;
+            }
+        }
+    }
+}
+
+void Game::updateMusicPlayback() {
+    if (!musicLoaded) {
+        return;
+    }
+
+    if (musicEnabled) {
+        if (backgroundMusic.getStatus() != sf::SoundSource::Status::Playing) {
+            backgroundMusic.play();
+        }
+    } else {
+        backgroundMusic.pause();
+    }
 }
 
 bool Game::insideGrid(sf::Vector2i point) const {
@@ -559,8 +675,13 @@ void Game::spawnZombie() {
     }
 
     const int row = std::rand() % rows;
-    const bool spawnConehead = currentLevel >= 2 && spawnedZombies % 3 == 2;
-    if (spawnConehead) {
+    if (currentLevel >= 4 && spawnedZombies % 5 == 4) {
+        zombies.push_back(
+            std::make_unique<ZombieVariant>(resources, row, ZombieVariant::Kind::Tough));
+    } else if (currentLevel >= 3 && spawnedZombies % 4 == 1) {
+        zombies.push_back(
+            std::make_unique<ZombieVariant>(resources, row, ZombieVariant::Kind::Fast));
+    } else if (currentLevel >= 2 && spawnedZombies % 3 == 2) {
         zombies.push_back(std::make_unique<ZombieConehead>(resources, row));
     } else {
         zombies.push_back(std::make_unique<ZombieBasic>(resources, row));
