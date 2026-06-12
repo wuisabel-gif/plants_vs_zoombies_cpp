@@ -10,6 +10,19 @@ void Zombie::damage(int amount) {
     }
 }
 
+void Zombie::destroy() {
+    blood = 0;
+    setDie();
+}
+
+void Zombie::applySlow() {
+    slowTimer = 1.5f;
+}
+
+float Zombie::movementSpeed() const {
+    return slowTimer > 0.0f ? 10.0f : speed;
+}
+
 bool Zombie::isAlive() const {
     return blood > 0 && state != State::Dying && state != State::Removed;
 }

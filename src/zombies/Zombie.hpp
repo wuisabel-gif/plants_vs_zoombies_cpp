@@ -15,6 +15,9 @@ public:
     virtual void setDie() = 0;
 
     void damage(int amount);
+    void destroy();
+    void applySlow();
+    float movementSpeed() const;
     bool isAlive() const;
     bool shouldRemove() const;
     int row() const;
@@ -34,5 +37,6 @@ protected:
     int blood = 7;
     float speed = 20.0f;
     float attack = 1.2f;
+    float slowTimer = 0.0f;
     State state = State::Walking;
 };

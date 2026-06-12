@@ -1,4 +1,4 @@
-#include "zombies/ZombieBasic.hpp"
+#include "zombies/ZombieConehead.hpp"
 
 #include <algorithm>
 
@@ -9,16 +9,16 @@ constexpr float cellWidth = 81.0f;
 constexpr float cellHeight = 99.0f;
 }
 
-ZombieBasic::ZombieBasic(ResourceManager& resources, int row)
+ZombieConehead::ZombieConehead(ResourceManager& resources, int row)
     : Zombie(row, {gridLeft + cellWidth * 9.0f, gridTop + cellHeight * row}),
-      walk(resources, "assets/biology/zombie/Zombie1", "Frame", 22),
-      eat(resources, "assets/biology/zombie/ZombieAttack", "Frame", 20),
+      walk(resources, "assets/biology/zombie/Zombie4", "Frame", 21),
+      eat(resources, "assets/biology/zombie/ConeheadZombieAttack", "Frame", 11),
       dieBody(resources, "assets/biology/zombie/ZombieDie", "Frame", 14),
       dieHead(resources, "assets/biology/zombie/ZombieHead", "Frame", 11) {
-    blood = 7;
+    blood = 14;
 }
 
-void ZombieBasic::update(float deltaSeconds, Plant* target) {
+void ZombieConehead::update(float deltaSeconds, Plant* target) {
     slowTimer = std::max(0.0f, slowTimer - deltaSeconds);
 
     if (state == State::Walking) {
@@ -44,7 +44,7 @@ void ZombieBasic::update(float deltaSeconds, Plant* target) {
     }
 }
 
-void ZombieBasic::draw(sf::RenderTarget& target) const {
+void ZombieConehead::draw(sf::RenderTarget& target) const {
     const sf::Vector2f drawPos(pos.x - 75.0f, pos.y - 60.0f);
     if (state == State::Walking) {
         walk.draw(target, drawPos);
@@ -62,7 +62,7 @@ void ZombieBasic::draw(sf::RenderTarget& target) const {
     target.draw(shadow);
 }
 
-void ZombieBasic::setDie() {
+void ZombieConehead::setDie() {
     state = State::Dying;
     dieHead.playOnce();
     dieBody.playOnce();
