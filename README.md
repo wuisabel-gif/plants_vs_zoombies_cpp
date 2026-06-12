@@ -101,41 +101,75 @@ inside its blast radius.
   and assets as the native SFML game.
 - Add save/progress behavior if needed.
 
-## 中文
+# 中文
 
-这个项目是一个基于 C++17 和 SFML 的 Plants vs. Zombies 风格桌面游戏。
-当前可上传版本只需要 C++ 源码和必要素材；`build/` 这类生成目录不需要上传。
+这是一个使用 **C++17** 和 **SFML** 开发的 Plants vs. Zombies 风格桌面游戏项目。
 
-当前版本已经实现了原生窗口、SFML 渲染、开始菜单、草坪背景、种子栏界面、
-六种种子卡片的价格和冷却、SunFlower、Peashooter、WallNut、CherryBomb、
-SnowPea、Repeater 的放置、自动收集的阳光、豌豆和寒冰豌豆子弹、
-BasicZombie 和 ConeheadZombie、碰撞、生命值、关卡推进、波次爆发以及胜负
-状态。
+提交作业或上传项目时，只需要包含源码和必要素材即可，像 `build/` 这类编译生成目录不需要上传。
 
-### 素材来源
+## 当前功能
 
-本项目使用的 UI 文件夹和相关视觉素材来自 GitHub 仓库
-[lixing-hust/plants_vs_zoombie](https://github.com/lixing-hust/plants_vs_zoombie)。
-这些 UI 素材归功于该仓库。
+目前已经实现：
 
-目前有一部分 UI 图片和界面文字仍然是中文，因为它们来自当前可用的素材包。
-游戏源码和准备上传的 C++ 文件会保持英文。
+- 原生窗口与 SFML 渲染
+- 开始菜单和主界面
+- 草坪场景与种子栏 UI
+- 六种植物卡片（包含阳光消耗与冷却时间）
+- SunFlower
+- Peashooter
+- WallNut
+- CherryBomb
+- SnowPea
+- Repeater
+- 自动生成并收集阳光
+- 普通豌豆与寒冰豌豆子弹
+- BasicZombie 与 ConeheadZombie
+- 碰撞检测与生命值系统
+- 僵尸波次生成与关卡推进
+- 游戏胜利与失败判定
 
-### 环境要求
+## 素材来源
 
-- CMake 3.16 或更新版本
+项目中的部分 UI 界面和美术资源来自 GitHub 项目：
+
+https://github.com/lixing-hust/plants_vs_zoombie
+
+感谢原作者提供的素材资源。
+
+由于目前使用的素材包本身包含中文资源，因此游戏中仍然可以看到部分中文按钮、图片和界面文字。后续如果有合适的英文素材，会逐步替换。
+
+项目源码全部采用英文命名，提交和上传的 C++ 文件也保持英文风格。
+
+## 环境要求
+
+- CMake 3.16 或更高版本
 - 支持 C++17 的编译器
-- SFML 3.0 或更新版本
+- SFML 3.0 或更高版本
 
-如果你在 macOS 上使用 Homebrew，可以这样安装 SFML：
+如果你使用 macOS 和 Homebrew，可以通过以下命令安装 SFML：
 
 ```bash
 brew install sfml
 ```
 
-### 构建
+## 构建项目
 
 ```bash
 cmake -S . -B build
 cmake --build build
 ```
+
+## 项目结构
+
+```text
+.
+├── assets/
+├── include/
+├── src/
+├── CMakeLists.txt
+└── README.md
+```
+
+## 项目状态
+
+当前项目仍在持续开发中，后续计划完善更多植物、僵尸、关卡机制以及 UI 细节，并逐步替换临时素材资源。
