@@ -9,7 +9,11 @@
 class Animation {
 public:
     Animation() = default;
-    Animation(ResourceManager& resources, const std::string& folder, const std::string& prefix, int frames);
+    Animation(
+        ResourceManager& resources,
+        const std::string& folder,
+        const std::string& prefix,
+        int frames);
 
     void update(float deltaSeconds);
     void draw(sf::RenderTarget& target, sf::Vector2f position) const;
