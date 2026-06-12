@@ -74,13 +74,6 @@ void Game::handleEvents() {
             startButton.setHover(mouse);
             quitButton.setHover(mouse);
             gameOverButton.setHover(mouse);
-            if (scene == Scene::Adventure) {
-                for (auto& sunToken : sunTokens) {
-                    if (sunToken.contains(mouse)) {
-                        sunToken.catchSun();
-                    }
-                }
-            }
         } else if (const auto* pressed = event->getIf<sf::Event::MouseButtonPressed>()) {
             if (pressed->button == sf::Mouse::Button::Left) {
                 handleClick(pressed->position);
@@ -416,11 +409,13 @@ void Game::drawAdventure() {
 }
 
 void Game::drawSeedBank() {
+    constexpr sf::Vector2f sunCounterTextPosition{190.0f, 61.0f};
+
     drawSprite("assets/ui/SeedBank.png", {170.0f, 0.0f});
     drawSprite("assets/ui/ShovelBank.png", {170.0f + 446.0f, 0.0f});
     drawSprite("assets/ui/Shovel.png", {170.0f + 446.0f, 0.0f});
     drawCards();
-    drawText(std::to_string(sun), {190.0f, 73.0f}, 18, sf::Color::Black);
+    drawText(std::to_string(sun), sunCounterTextPosition, 18, sf::Color::Black);
     drawText(
         "Level " + std::to_string(currentLevel),
         {640.0f, 555.0f},

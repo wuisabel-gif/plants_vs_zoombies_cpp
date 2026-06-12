@@ -18,7 +18,12 @@ SunToken::SunToken(ResourceManager& resources, sf::Vector2f start, sf::Vector2f 
 void SunToken::update(float deltaSeconds) {
     age += deltaSeconds;
 
-    if (caught) {
+    if (!collecting && age >= 0.6f) {
+        collecting = true;
+        target = {170.0f, 0.0f};
+    }
+
+    if (collecting) {
         const sf::Vector2f delta = target - position;
         const float distance = length(delta);
         if (distance <= 20.0f) {
@@ -57,20 +62,10 @@ void SunToken::draw(sf::RenderTarget& targetSurface) const {
     }
 }
 
-void SunToken::catchSun() {
-    caught = true;
-    target = {170.0f, 0.0f};
-}
-
-bool SunToken::contains(sf::Vector2i point) const {
-    return point.x > position.x && point.x < position.x + 117.0f
-        && point.y > position.y && point.y < position.y + 117.0f;
-}
-
 bool SunToken::isReadyToCollect() const {
     return collected;
 }
 
 bool SunToken::shouldRemove() const {
-    return collected || (!caught && age > 3.0f);
+    return collected;
 }
