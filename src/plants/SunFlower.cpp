@@ -6,14 +6,16 @@ SunFlower::SunFlower(ResourceManager& resources, int column, int row, sf::Vector
     health = 5.0f;
 }
 
-int SunFlower::update(float deltaSeconds, bool, std::vector<Projectile>&) {
+Plant::Action SunFlower::update(float deltaSeconds, bool, std::vector<Projectile>&) {
     idle.update(deltaSeconds);
     sunTimer += deltaSeconds;
     if (sunTimer >= 10.0f) {
         sunTimer = 0.0f;
-        return 25;
+        Action action;
+        action.sun = 25;
+        return action;
     }
-    return 0;
+    return {};
 }
 
 void SunFlower::draw(sf::RenderTarget& target) const {

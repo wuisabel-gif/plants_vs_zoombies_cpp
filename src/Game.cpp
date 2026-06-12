@@ -1,11 +1,17 @@
 #include "Game.hpp"
 
+#include "plants/CherryBomb.hpp"
 #include "plants/Peashooter.hpp"
+#include "plants/Repeater.hpp"
+#include "plants/SnowPea.hpp"
 #include "plants/SunFlower.hpp"
+#include "plants/WallNut.hpp"
 #include "zombies/ZombieBasic.hpp"
+#include "zombies/ZombieConehead.hpp"
 
 #include <algorithm>
 #include <array>
+#include <cmath>
 #include <cstdlib>
 
 namespace {
@@ -13,15 +19,24 @@ constexpr unsigned int windowWidth = 820;
 constexpr unsigned int windowHeight = 620;
 constexpr std::array<int, 4> levelZombieTotals = {8, 12, 16, 22};
 constexpr std::array<float, 4> levelFirstSpawnDelays = {
-    6.0f, 5.0f, 4.0f, 3.0f
+    6.0f, 8.0f, 5.0f, 3.5f
 };
-constexpr std::array<float, 4> levelSpawnDelays = {4.0f, 3.4f, 2.8f, 2.2f};
+constexpr std::array<float, 4> levelSpawnDelays = {4.0f, 4.6f, 3.0f, 2.4f};
 constexpr std::array<int, 6> cardPrices = {50, 100, 50, 150, 175, 200};
 constexpr std::array<float, 6> cardCooldownDurations = {
     2.0f, 2.5f, 5.0f, 15.0f, 8.0f, 10.0f
 };
 constexpr int sunFlowerCard = 0;
 constexpr int peashooterCard = 1;
+constexpr int wallNutCard = 2;
+constexpr int cherryBombCard = 3;
+constexpr int snowPeaCard = 4;
+constexpr int repeaterCard = 5;
+
+float distance(sf::Vector2f left, sf::Vector2f right) {
+    const sf::Vector2f delta = left - right;
+    return std::sqrt(delta.x * delta.x + delta.y * delta.y);
+}
 }
 
 Game::Game()
@@ -37,7 +52,7 @@ Game::Game()
       gameOverButton(resources,
           "assets/ui/GameOver.png",
           "assets/ui/GameOver_highlight.png",
-          {0.0f, 0.0f}) {
+          {280.0f, 335.0f}) {
     window.setFramerateLimit(60);
 }
 
@@ -98,7 +113,9 @@ void Game::handleClick(sf::Vector2i point) {
     }
 
     if (scene == Scene::ZombiesWon) {
-        scene = Scene::Start;
+        if (gameOverButton.contains(point)) {
+            scene = Scene::Start;
+        }
         return;
     }
 
@@ -132,6 +149,30 @@ void Game::handleClick(sf::Vector2i point) {
                     cell.x,
                     cell.y,
                     plantPosition(cell.x, cell.y));
+            } else if (selectedCard == wallNutCard) {
+                slot = std::make_unique<WallNut>(
+                    resources,
+                    cell.x,
+                    cell.y,
+                    plantPosition(cell.x, cell.y));
+            } else if (selectedCard == cherryBombCard) {
+                slot = std::make_unique<CherryBomb>(
+                    resources,
+                    cell.x,
+                    cell.y,
+                    plantPosition(cell.x, cell.y));
+            } else if (selectedCard == snowPeaCard) {
+                slot = std::make_unique<SnowPea>(
+                    resources,
+                    cell.x,
+                    cell.y,
+                    plantPosition(cell.x, cell.y));
+            } else if (selectedCard == repeaterCard) {
+                slot = std::make_unique<Repeater>(
+                    resources,
+                    cell.x,
+                    cell.y,
+                    plantPosition(cell.x, cell.y));
             }
 
             sun -= cardPrice(selectedCard);
@@ -154,6 +195,12 @@ void Game::update(float deltaSeconds) {
     spawnTimer += deltaSeconds;
     if (spawnedZombies < firstWaveTotal && spawnTimer >= spawnDelay) {
         spawnZombie();
+        if (currentLevel >= 3 && spawnedZombies == firstWaveTotal / 2) {
+            spawnZombie();
+        }
+        if (currentLevel >= 4 && spawnedZombies >= firstWaveTotal - 3) {
+            spawnZombie();
+        }
         spawnTimer = 0.0f;
         spawnDelay = levelSpawnDelays[static_cast<std::size_t>(currentLevel - 1)];
     }
@@ -161,15 +208,27 @@ void Game::update(float deltaSeconds) {
     for (auto& column : plants) {
         for (auto& plant : column) {
             if (plant) {
-                const int producedSun = plant->update(
+                const Plant::Action action = plant->update(
                     deltaSeconds,
                     rowHasZombie(plant->row()),
                     projectiles);
-                if (producedSun > 0) {
+                if (action.sun > 0) {
                     sunTokens.emplace_back(
                         resources,
                         plant->sunSpawnPosition(),
                         plant->sunSpawnPosition());
+                }
+                if (action.explode) {
+                    for (auto& zombie : zombies) {
+                        if (zombie->isAlive()
+                            && distance(zombie->position(), action.explosionCenter)
+                                <= action.explosionRadius) {
+                            zombie->destroy();
+                        }
+                    }
+                }
+                if (action.removeSelf) {
+                    plant.reset();
                 }
             }
         }
@@ -190,6 +249,9 @@ void Game::update(float deltaSeconds) {
         for (auto& zombie : zombies) {
             if (zombie->row() == projectile.row() && zombie->isAlive()
                 && projectile.bounds().findIntersection(zombie->bounds()).has_value()) {
+                if (projectile.slowsTarget()) {
+                    zombie->applySlow();
+                }
                 zombie->damage(projectile.damage());
                 projectile.hit();
                 break;
@@ -303,6 +365,14 @@ void Game::drawAdventure() {
             drawSprite("assets/img/Blurs/SunFlower.png", plantPosition(cell.x, cell.y));
         } else if (selectedCard == peashooterCard) {
             drawSprite("assets/img/Blurs/Peashooter.png", plantPosition(cell.x, cell.y));
+        } else if (selectedCard == wallNutCard) {
+            drawSprite("assets/img/Blurs/WallNut.png", plantPosition(cell.x, cell.y));
+        } else if (selectedCard == cherryBombCard) {
+            drawSprite("assets/img/Blurs/CherryBomb.png", plantPosition(cell.x, cell.y));
+        } else if (selectedCard == snowPeaCard) {
+            drawSprite("assets/img/Blurs/SnowPea.png", plantPosition(cell.x, cell.y));
+        } else if (selectedCard == repeaterCard) {
+            drawSprite("assets/img/Blurs/Repeater.png", plantPosition(cell.x, cell.y));
         }
     }
 
@@ -341,7 +411,7 @@ void Game::drawAdventure() {
     if (scene == Scene::ZombiesWon) {
         drawSprite("assets/img/ZombiesWon.png", {250.0f, 160.0f});
         drawSprite("assets/ui/GameOverPanel.png", {232.0f, 160.0f});
-        drawSprite("assets/ui/GameOver.png", {280.0f, 335.0f});
+        gameOverButton.draw(window);
     }
 }
 
@@ -489,13 +559,22 @@ Plant* Game::plantHitBy(Zombie& zombie) {
 }
 
 void Game::spawnZombie() {
+    if (spawnedZombies >= firstWaveTotal) {
+        return;
+    }
+
     const int row = std::rand() % rows;
-    zombies.push_back(std::make_unique<ZombieBasic>(resources, row));
+    const bool spawnConehead = currentLevel >= 2 && spawnedZombies % 3 == 2;
+    if (spawnConehead) {
+        zombies.push_back(std::make_unique<ZombieConehead>(resources, row));
+    } else {
+        zombies.push_back(std::make_unique<ZombieBasic>(resources, row));
+    }
     ++spawnedZombies;
 }
 
 bool Game::isCardPorted(int card) const {
-    return card == sunFlowerCard || card == peashooterCard;
+    return card >= sunFlowerCard && card <= repeaterCard;
 }
 
 int Game::cardPrice(int card) const {
