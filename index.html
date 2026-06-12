@@ -1,0 +1,813 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Plants vs. Zoombies C++</title>
+  <style>
+    :root {
+      --page: #f5f8f3;
+      --paper: #fffdf5;
+      --ink: #182026;
+      --muted: #53616d;
+      --line: #c8d4dc;
+      --green: #28784b;
+      --green-dark: #194c31;
+      --sun: #f2bd35;
+      --blue: #0969da;
+      --shadow: 0 20px 60px rgb(24 32 38 / 12%);
+    }
+
+    @font-face {
+      font-family: "Brianne Tod";
+      src: url("assets/InfographAssets/Fonts/BrianneTod.ttf") format("truetype");
+      font-display: swap;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      background:
+        radial-gradient(circle at 8% 4%, rgb(242 189 53 / 18%), transparent 28rem),
+        radial-gradient(circle at 90% 12%, rgb(40 120 75 / 16%), transparent 26rem),
+        linear-gradient(180deg, #fbfff7 0%, var(--page) 48%, #edf4ea 100%);
+      color: var(--ink);
+      font-family: "Brianne Tod", "Avenir Next", Avenir, "Trebuchet MS", Verdana, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    a {
+      color: var(--blue);
+      font-weight: 700;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    code {
+      border: 1px solid #d8e1e7;
+      border-radius: 0.35rem;
+      background: #f4f7f9;
+      padding: 0.1rem 0.35rem;
+      font-family: Menlo, Monaco, Consolas, monospace;
+      font-size: 0.84em;
+    }
+
+    pre {
+      overflow-x: auto;
+      border: 1px solid #d3dee5;
+      border-radius: 0.9rem;
+      background: #101820;
+      color: #e8f4e9;
+      padding: 1rem;
+      font-size: 0.82rem;
+    }
+
+    pre code {
+      border: 0;
+      background: transparent;
+      color: #f7fff4;
+      padding: 0;
+    }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 60px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 30px;
+      padding: 14px 18px;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: rgb(255 255 255 / 72%);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 28px rgb(24 32 38 / 8%);
+      position: sticky;
+      top: 12px;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      min-width: 0;
+    }
+
+    .brand img {
+      width: 44px;
+      height: 44px;
+      object-fit: contain;
+      filter: drop-shadow(0 6px 12px rgb(0 0 0 / 18%));
+    }
+
+    .brand strong {
+      display: block;
+      font-family: "Brianne Tod", "Avenir Next", Avenir, sans-serif;
+      font-size: 0.95rem;
+      letter-spacing: 0.04em;
+    }
+
+    .brand span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+    }
+
+    .nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      font-size: 0.8rem;
+    }
+
+    .nav a {
+      color: var(--green-dark);
+      text-decoration: none;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 34px;
+      align-items: stretch;
+      margin-bottom: 42px;
+    }
+
+    .hero-copy,
+    .hero-card,
+    .section {
+      border: 1px solid var(--line);
+      background: rgb(255 253 245 / 86%);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy {
+      border-radius: 1.35rem;
+      padding: clamp(24px, 4vw, 42px);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid rgb(40 120 75 / 25%);
+      border-radius: 999px;
+      background: rgb(40 120 75 / 9%);
+      color: var(--green-dark);
+      padding: 0.35rem 0.7rem;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 20px 0 16px;
+      font-family: "Brianne Tod", "Avenir Next", Avenir, sans-serif;
+      font-size: clamp(2rem, 4.2vw, 3.55rem);
+      line-height: 1.03;
+      letter-spacing: 0.01em;
+    }
+
+    .lead {
+      max-width: 680px;
+      color: #31414c;
+      font-size: 1rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      margin-top: 26px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.8rem;
+      padding: 0.65rem 0.9rem;
+      text-decoration: none;
+      font-weight: 850;
+      font-size: 0.92rem;
+    }
+
+    .button.primary {
+      background: var(--green);
+      color: white;
+      box-shadow: 0 10px 24px rgb(40 120 75 / 24%);
+    }
+
+    .button.secondary {
+      border: 1px solid var(--line);
+      background: white;
+      color: var(--green-dark);
+    }
+
+    .hero-card {
+      border-radius: 1.35rem;
+      overflow: hidden;
+    }
+
+    .game-window {
+      min-height: 100%;
+      background:
+        linear-gradient(90deg, rgb(15 63 34 / 22%) 1px, transparent 1px),
+        linear-gradient(0deg, rgb(15 63 34 / 22%) 1px, transparent 1px),
+        url("assets/img/background.jpg") center / cover;
+      background-size: 80px 80px, 80px 80px, cover;
+      padding: 18px;
+      position: relative;
+    }
+
+    .seed-bank {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: fit-content;
+      max-width: 100%;
+      margin-bottom: 72px;
+      border: 3px solid #6d3516;
+      border-radius: 12px;
+      background: #4d260f;
+      padding: 8px;
+      box-shadow: 0 8px 20px rgb(0 0 0 / 30%);
+      overflow-x: auto;
+    }
+
+    .sun-counter {
+      min-width: 78px;
+      border-radius: 9px;
+      background: #fff1a7;
+      color: #2a1a08;
+      text-align: center;
+      font-family: "Brianne Tod", Georgia, serif;
+      font-size: 1.35rem;
+      font-weight: 900;
+      line-height: 1;
+      padding: 0.65rem 0.3rem;
+    }
+
+    .seed-card {
+      width: 50px;
+      height: 70px;
+      object-fit: contain;
+      border-radius: 4px;
+      background: #ead8a4;
+    }
+
+    .board-sprites {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      align-items: end;
+      gap: 14px;
+      min-height: 240px;
+      padding: 0 6px 10px;
+    }
+
+    .board-sprites img {
+      max-height: 110px;
+      object-fit: contain;
+      filter: drop-shadow(0 10px 10px rgb(0 0 0 / 35%));
+    }
+
+    .video-shell {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.1rem;
+      border: 1px solid #24313b;
+      background: #05080b;
+      box-shadow: var(--shadow);
+      aspect-ratio: 16 / 9;
+    }
+
+    .video-shell iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+
+    .section {
+      border-radius: 1.1rem;
+      margin: 36px 0;
+      padding: clamp(20px, 3vw, 32px);
+    }
+
+    .section h2 {
+      margin: 0 0 18px;
+      font-family: "Brianne Tod", "Avenir Next", Avenir, sans-serif;
+      font-size: clamp(1.35rem, 2.4vw, 1.9rem);
+      letter-spacing: 0.03em;
+    }
+
+    .divider {
+      height: 6px;
+      margin: 32px 0;
+      border: 0;
+      background: #d5e0e7;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 0.75rem;
+      background: white;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px;
+      background: white;
+    }
+
+    th,
+    td {
+      border: 1px solid var(--line);
+      padding: 0.85rem 1rem;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f8fbfd;
+      color: #171f26;
+      font-size: 0.95rem;
+    }
+
+    tr:nth-child(even) td {
+      background: #f5f8fa;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .feature-card {
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: white;
+      padding: 1rem;
+    }
+
+    .feature-card strong {
+      display: block;
+      color: var(--green-dark);
+      margin-bottom: 0.35rem;
+      font-size: 0.98rem;
+    }
+
+    .asset-strip {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+      align-items: center;
+      margin-top: 18px;
+    }
+
+    .asset-strip figure {
+      margin: 0;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: white;
+      padding: 12px;
+      text-align: center;
+      min-height: 150px;
+      display: grid;
+      place-items: center;
+    }
+
+    .asset-strip img {
+      max-height: 92px;
+      margin: 0 auto;
+      object-fit: contain;
+    }
+
+    .asset-strip figcaption {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      margin-top: 8px;
+    }
+
+    .note {
+      border-left: 5px solid var(--sun);
+      border-radius: 0.75rem;
+      background: #fff8dc;
+      padding: 1rem;
+      color: #4c3a08;
+    }
+
+    footer {
+      color: var(--muted);
+      text-align: center;
+      padding: 24px 0 6px;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 860px) {
+      body {
+        font-size: 15px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+        position: static;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .asset-strip {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <img src="assets/img/Blurs/SunFlower.png" alt="SunFlower asset">
+        <div>
+          <strong>Plants vs. Zoombies C++</strong>
+          <span>C++17 / SFML desktop game showcase</span>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Page sections">
+        <a href="#video">Video</a>
+        <a href="#features">Features</a>
+        <a href="#build">Build</a>
+        <a href="#systems">Systems</a>
+        <a href="#credits">Credits</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <span class="eyebrow">First larger C++ game project</span>
+          <h1>Plants vs. Zombies, rebuilt as a C++ desktop game.</h1>
+          <p class="lead">
+            A C++17/SFML tower-defense project featuring grid-based plant
+            placement, seed packets, automatic sun collection, projectile
+            combat, multiple zombie types, level progression, saved progress,
+            win/loss states, and looping background music.
+          </p>
+          <div class="actions">
+            <a class="button primary" href="#video">Watch the demo</a>
+            <a class="button secondary" href="https://github.com/wuisabel-gif/plants_vs_zoombies_cpp">
+              View GitHub repo
+            </a>
+          </div>
+        </div>
+
+        <aside class="hero-card" aria-label="Game interface preview">
+          <div class="game-window">
+            <div class="seed-bank">
+              <div class="sun-counter">550</div>
+              <img class="seed-card" src="assets/ui/Cards/SunFlower0.png" alt="SunFlower seed packet">
+              <img class="seed-card" src="assets/ui/Cards/Peashooter0.png" alt="Peashooter seed packet">
+              <img class="seed-card" src="assets/ui/Cards/WallNut0.png" alt="WallNut seed packet">
+              <img class="seed-card" src="assets/ui/Cards/CherryBomb0.png" alt="CherryBomb seed packet">
+              <img class="seed-card" src="assets/ui/Cards/SnowPea0.png" alt="SnowPea seed packet">
+              <img class="seed-card" src="assets/ui/Cards/Repeater0.png" alt="Repeater seed packet">
+            </div>
+            <div class="board-sprites">
+              <img src="assets/biology/botany/SunFlower/SunFlower_0.png" alt="SunFlower">
+              <img src="assets/biology/botany/Peashooter/Peashooter_0.png" alt="Peashooter">
+              <img src="assets/biology/botany/WallNut/WallNut_0.png" alt="WallNut">
+              <img src="assets/biology/zombie/Zombie1/Frame0.png" alt="Basic zombie">
+              <img src="assets/biology/zombie/Zombie4/Frame0.png" alt="Conehead zombie">
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section id="video" class="section">
+        <h2>Gameplay Video</h2>
+        <p>
+          This embedded video shows the project running as a native desktop
+          game, including the start menu, seed bank, plant placement, zombie
+          waves, projectiles, and the overall gameplay loop.
+        </p>
+        <div class="video-shell">
+          <iframe
+            src="https://www.youtube.com/embed/2EqATLMfwcs"
+            title="Plants vs. Zoombies C++ gameplay demo"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <section id="features" class="section">
+        <h2>Project Overview</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Area</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Core Gameplay</strong></td>
+                <td>
+                  Grid-based lawn placement, seed packet selection, plant
+                  costs, cooldowns, projectile combat, zombie waves, and
+                  win/loss states.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Plants</strong></td>
+                <td>
+                  SunFlower, Peashooter, WallNut, CherryBomb, SnowPea, and
+                  Repeater are implemented with their own behavior.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Zombies</strong></td>
+                <td>
+                  BasicZombie, ConeheadZombie, fast zombie, and tough zombie
+                  variants appear across the level progression.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Progress & Audio</strong></td>
+                <td>
+                  The game saves local progress in <code>save_progress.txt</code>
+                  and automatically loops a supported soundtrack file from the
+                  <code>soundtrack/</code> folder.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="asset-strip" aria-label="Project assets">
+          <figure>
+            <img src="assets/img/Blurs/SunFlower.png" alt="SunFlower blur">
+            <figcaption>SunFlower</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/img/Blurs/Peashooter.png" alt="Peashooter blur">
+            <figcaption>Peashooter</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/img/Blurs/WallNut.png" alt="WallNut blur">
+            <figcaption>WallNut</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/img/Blurs/CherryBomb.png" alt="CherryBomb blur">
+            <figcaption>CherryBomb</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/img/Blurs/SnowPea.png" alt="SnowPea blur">
+            <figcaption>SnowPea</figcaption>
+          </figure>
+          <figure>
+            <img src="assets/img/Blurs/Repeater.png" alt="Repeater blur">
+            <figcaption>Repeater</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="build" class="section">
+        <h2>Build & Run</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <strong>Requirements</strong>
+            <p>CMake 3.16 or newer, a C++17 compiler, and SFML 3.0 or newer.</p>
+            <pre><code>brew install sfml</code></pre>
+          </div>
+          <div class="feature-card">
+            <strong>Build</strong>
+            <p>Run both commands from the project root.</p>
+            <pre><code>cmake -S . -B build
+cmake --build build</code></pre>
+          </div>
+          <div class="feature-card">
+            <strong>Run</strong>
+            <p>Launch the native desktop executable after building.</p>
+            <pre><code>./build/Game</code></pre>
+          </div>
+        </div>
+        <p class="note">
+          If the project is moved or cloned into a new folder, run
+          <code>cmake -S . -B build</code> again before
+          <code>cmake --build build</code>. The generated <code>build/</code>
+          folder should not be pushed to GitHub.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Controls & Soundtrack</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Input</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Mouse</td>
+                <td>Click Adventure, select seed packets, and place plants on the lawn grid.</td>
+              </tr>
+              <tr>
+                <td><code>M</code></td>
+                <td>Pause or resume background music.</td>
+              </tr>
+              <tr>
+                <td><code>N</code></td>
+                <td>Toggle sound-effect state for future action sounds.</td>
+              </tr>
+              <tr>
+                <td><code>R</code></td>
+                <td>Reset saved progress from the start menu.</td>
+              </tr>
+              <tr>
+                <td><code>Q</code> / <code>Esc</code></td>
+                <td>Quit the game.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          The game scans <code>soundtrack/</code>, <code>Soundtrack/</code>,
+          <code>assets/soundtrack/</code>, and <code>assets/Soundtrack/</code>
+          for <code>.ogg</code>, <code>.wav</code>, <code>.flac</code>,
+          <code>.aiff</code>, or <code>.mp3</code> files.
+        </p>
+      </section>
+
+      <section class="section">
+        <h2>Plant Damage Summary</h2>
+        <p>
+          Pea and snow-pea projectiles each deal <code>1</code> damage.
+          Repeater fires two peas per attack cycle. CherryBomb defeats any
+          current zombie type with one explosion if the zombie is inside its
+          blast radius.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Plant</th>
+                <th>Fast Zombie</th>
+                <th>BasicZombie</th>
+                <th>Tough Zombie</th>
+                <th>ConeheadZombie</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Peashooter</td>
+                <td>6 hits</td>
+                <td>7 hits</td>
+                <td>10 hits</td>
+                <td>14 hits</td>
+              </tr>
+              <tr>
+                <td>SnowPea</td>
+                <td>6 hits + slow</td>
+                <td>7 hits + slow</td>
+                <td>10 hits + slow</td>
+                <td>14 hits + slow</td>
+              </tr>
+              <tr>
+                <td>Repeater</td>
+                <td>3 volleys</td>
+                <td>4 volleys</td>
+                <td>5 volleys</td>
+                <td>7 volleys</td>
+              </tr>
+              <tr>
+                <td>CherryBomb</td>
+                <td>1 explosion</td>
+                <td>1 explosion</td>
+                <td>1 explosion</td>
+                <td>1 explosion</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <section id="systems" class="section">
+        <h2>Software Systems & Data Structures</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Concept</th>
+                <th>How It Appears in the Game</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>2D Array / Grid</strong></td>
+                <td>
+                  The lawn is stored as a fixed <code>9 x 5</code> grid using
+                  <code>std::array</code>, so each cell can hold one plant.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Vector / Dynamic Array</strong></td>
+                <td>
+                  <code>std::vector</code> manages active projectiles, sun
+                  tokens, and zombies as they appear and disappear.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Map / Caching</strong></td>
+                <td>
+                  <code>ResourceManager</code> caches loaded textures with
+                  <code>std::map&lt;std::string, sf::Texture&gt;</code>.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Inheritance / Polymorphism</strong></td>
+                <td>
+                  Base classes such as <code>Plant</code> and <code>Zombie</code>
+                  allow each plant and zombie type to keep its own behavior.
+                </td>
+              </tr>
+              <tr>
+                <td><strong>Finite State Machine</strong></td>
+                <td>
+                  The game switches between <code>Start</code>,
+                  <code>Adventure</code>, <code>PlantsWon</code>, and
+                  <code>ZombiesWon</code> scenes.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="credits" class="section">
+        <h2>Credits & Notes</h2>
+        <p>
+          The UI folder and related visual assets used by this project come
+          from
+          <a href="https://github.com/lixing-hust/plants_vs_zoombie">
+            lixing-hust/plants_vs_zoombie
+          </a>.
+          Credit goes to that repository for providing those UI assets.
+        </p>
+        <p>
+          Some UI artwork and text are currently Chinese because they come
+          from the available asset set. Gameplay source code and upload-facing
+          C++ files are kept in English.
+        </p>
+        <p>
+          Next improvements include individual sound-effect files for planting,
+          shooting, collecting sun, and explosions, plus continued level
+          balance tuning from playtesting.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>Built with C++17, SFML, CMake, and a very stubborn sunflower economy.</p>
+      <p>All rights reserved. wuisabel-gif 2026.</p>
+    </footer>
+  </div>
+</body>
+</html>
