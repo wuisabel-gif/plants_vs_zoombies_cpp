@@ -1,10 +1,12 @@
 #include "projectiles/Projectile.hpp"
 
-Projectile::Projectile(ResourceManager& resources, int row, sf::Vector2f start)
+Projectile::Projectile(ResourceManager& resources, int row, sf::Vector2f start, Type projectileType)
     : peaTexture(resources.texture("assets/biology/botany/bullet/ProjectilePea.png")),
+      snowTexture(resources.texture("assets/biology/botany/bullet/ProjectileSnowPea.png")),
       hitTexture(resources.texture("assets/biology/botany/bullet/BulletHit.png")),
       lane(row),
-      position(start) {}
+      position(start),
+      type(projectileType) {}
 
 void Projectile::update(float deltaSeconds) {
     if (flying) {
@@ -15,7 +17,10 @@ void Projectile::update(float deltaSeconds) {
 }
 
 void Projectile::draw(sf::RenderTarget& target) const {
-    const sf::Texture* texture = flying ? peaTexture : hitTexture;
+    const sf::Texture* texture = hitTexture;
+    if (flying) {
+        texture = type == Type::Snow ? snowTexture : peaTexture;
+    }
     if (texture) {
         sf::Sprite sprite(*texture);
         const sf::Vector2u size = texture->getSize();
@@ -42,6 +47,10 @@ bool Projectile::shouldRemove() const {
 
 bool Projectile::isFlying() const {
     return flying;
+}
+
+bool Projectile::slowsTarget() const {
+    return type == Type::Snow;
 }
 
 int Projectile::row() const {
