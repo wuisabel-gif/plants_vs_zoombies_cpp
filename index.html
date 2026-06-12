@@ -381,10 +381,10 @@
 
     .asset-strip {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 12px;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
       align-items: center;
-      margin-top: 18px;
+      margin-top: 20px;
     }
 
     .asset-strip figure {
@@ -392,24 +392,64 @@
       border: 1px solid var(--line);
       border-radius: 1rem;
       background: white;
-      padding: 12px;
+      padding: 16px;
       text-align: center;
-      min-height: 150px;
-      display: grid;
-      place-items: center;
+      min-height: 265px;
+      transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
     }
 
-    .asset-strip img {
-      max-height: 92px;
+    .asset-strip figure:hover,
+    .asset-strip figure:focus-within {
+      border-color: rgb(40 120 75 / 45%);
+      box-shadow: 0 14px 36px rgb(40 120 75 / 14%);
+      transform: translateY(-4px);
+    }
+
+    .plant-image-stack {
+      display: grid;
+      place-items: center;
+      height: 112px;
+      margin-bottom: 12px;
+    }
+
+    .plant-image-stack img {
+      grid-area: 1 / 1;
+      max-height: 102px;
       margin: 0 auto;
       object-fit: contain;
+      transition: opacity 180ms ease, transform 180ms ease, filter 180ms ease;
+    }
+
+    .plant-image-stack .plant-regular {
+      opacity: 0;
+      transform: scale(0.94);
+    }
+
+    .asset-strip figure:hover .plant-blur,
+    .asset-strip figure:focus-within .plant-blur {
+      opacity: 0;
+      transform: scale(1.04);
+      filter: blur(2px);
+    }
+
+    .asset-strip figure:hover .plant-regular,
+    .asset-strip figure:focus-within .plant-regular {
+      opacity: 1;
+      transform: scale(1);
     }
 
     .asset-strip figcaption {
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 700;
+      color: var(--green-dark);
+      font-size: 1rem;
+      font-weight: 800;
       margin-top: 8px;
+    }
+
+    .asset-strip p {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      margin: 8px 0 0;
     }
 
     .note {
@@ -448,6 +488,12 @@
 
       .asset-strip {
         grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 560px) {
+      .asset-strip {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -571,30 +617,95 @@
           </table>
         </div>
 
-        <div class="asset-strip" aria-label="Project assets">
-          <figure>
-            <img src="assets/img/Blurs/SunFlower.png" alt="SunFlower blur">
+        <div class="asset-strip" aria-label="Plant cards">
+          <figure tabindex="0">
+            <div class="plant-image-stack">
+              <img class="plant-blur" src="assets/img/Blurs/SunFlower.png" alt="Blurred SunFlower">
+              <img
+                class="plant-regular"
+                src="assets/biology/botany/SunFlower/SunFlower_0.png"
+                alt="Regular SunFlower">
+            </div>
             <figcaption>SunFlower</figcaption>
+            <p>
+              Generates sun over time, providing the resources needed to grow
+              and defend your garden.
+            </p>
           </figure>
-          <figure>
-            <img src="assets/img/Blurs/Peashooter.png" alt="Peashooter blur">
+
+          <figure tabindex="0">
+            <div class="plant-image-stack">
+              <img class="plant-blur" src="assets/img/Blurs/Peashooter.png" alt="Blurred Peashooter">
+              <img
+                class="plant-regular"
+                src="assets/biology/botany/Peashooter/Peashooter_0.png"
+                alt="Regular Peashooter">
+            </div>
             <figcaption>Peashooter</figcaption>
+            <p>
+              Your basic offensive plant. Fires peas at zombies in its lane to
+              deal consistent damage.
+            </p>
           </figure>
-          <figure>
-            <img src="assets/img/Blurs/WallNut.png" alt="WallNut blur">
+
+          <figure tabindex="0">
+            <div class="plant-image-stack">
+              <img class="plant-blur" src="assets/img/Blurs/WallNut.png" alt="Blurred WallNut">
+              <img
+                class="plant-regular"
+                src="assets/biology/botany/WallNut/WallNut_0.png"
+                alt="Regular WallNut">
+            </div>
             <figcaption>WallNut</figcaption>
+            <p>
+              A durable defensive plant with high health that blocks zombies
+              and protects other plants.
+            </p>
           </figure>
-          <figure>
-            <img src="assets/img/Blurs/CherryBomb.png" alt="CherryBomb blur">
+
+          <figure tabindex="0">
+            <div class="plant-image-stack">
+              <img class="plant-blur" src="assets/img/Blurs/CherryBomb.png" alt="Blurred CherryBomb">
+              <img
+                class="plant-regular"
+                src="assets/biology/botany/CherryBomb/CherryBomb_0.png"
+                alt="Regular CherryBomb">
+            </div>
             <figcaption>CherryBomb</figcaption>
+            <p>
+              Explodes shortly after planting, dealing massive area damage to
+              nearby zombies.
+            </p>
           </figure>
-          <figure>
-            <img src="assets/img/Blurs/SnowPea.png" alt="SnowPea blur">
+
+          <figure tabindex="0">
+            <div class="plant-image-stack">
+              <img class="plant-blur" src="assets/img/Blurs/SnowPea.png" alt="Blurred SnowPea">
+              <img
+                class="plant-regular"
+                src="assets/biology/botany/SnowPea/SnowPea_0.png"
+                alt="Regular SnowPea">
+            </div>
             <figcaption>SnowPea</figcaption>
+            <p>
+              Fires frozen peas that damage zombies and slow their movement
+              speed.
+            </p>
           </figure>
-          <figure>
-            <img src="assets/img/Blurs/Repeater.png" alt="Repeater blur">
+
+          <figure tabindex="0">
+            <div class="plant-image-stack">
+              <img class="plant-blur" src="assets/img/Blurs/Repeater.png" alt="Blurred Repeater">
+              <img
+                class="plant-regular"
+                src="assets/biology/botany/Repeater/Repeater_0.png"
+                alt="Regular Repeater">
+            </div>
             <figcaption>Repeater</figcaption>
+            <p>
+              An upgraded Peashooter that fires two peas at once, doubling its
+              offensive output.
+            </p>
           </figure>
         </div>
       </section>
